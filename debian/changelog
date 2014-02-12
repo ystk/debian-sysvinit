@@ -1,3 +1,926 @@
+sysvinit (2.88dsf-41+deb7u1) stable-proposed-updates; urgency=low
+
+  [ Roger Leigh ]
+  * Correct the Breaks on bootchart to ensure that all broken
+    versions are removed on upgrade (Closes: #694252).  Break
+    bootchart << 0.10~svn407-4 to ensure that 0.10~svn407-3.3
+    and earlier are removed.
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 14 Jul 2013 18:21:07 +0100
+
+sysvinit (2.88dsf-41) unstable; urgency=low
+
+  [ Roger Leigh ]:
+  * sysvinit postinst always creates /etc/inittab if absent during
+    configuration (Closes: #700051).
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 07 Feb 2013 23:32:12 +0000
+
+sysvinit (2.88dsf-40) unstable; urgency=low
+
+  [ Roger Leigh ]:
+  * Don't restart init on GNU/Hurd (Closes: #663009).
+  * Handle PID detection more robustly, to work better with containers
+    (Closes: #699523).  Always use PID1, which avoids the need for
+    fragile pidof usage.
+  * Handle ischroot more gracefully on failure (Closes: #699566).
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 03 Feb 2013 14:52:05 +0000
+
+sysvinit (2.88dsf-39) unstable; urgency=low
+
+  [ Roger Leigh ]:
+  * initscripts postinst calls urandom, not urandom.sh (Closes: #698966).
+  * sysvinit postinst unconditionally creates a compatibility initctl
+    link to ensure the migration to /run won't fail (Closes: #663009).
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 26 Jan 2013 12:09:29 +0000
+
+sysvinit (2.88dsf-38) unstable; urgency=low
+
+  [ Roger Leigh ]:
+  * If pidof fails in the sysvinit postinst or initscripts, default
+    to PID 1 (for /sbin/init) (Closes: #663009).
+  * Make fstab globbing in initscripts completely robust.
+
+ -- Roger Leigh <rleigh@debian.org>  Wed, 23 Jan 2013 22:43:55 +0000
+
+sysvinit (2.88dsf-37) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts: Remove all use of shell heredocs in shell libraries;
+    these require a writable /tmp which will not be guaranteed to be
+    present in early boot (Closes: #697994).
+
+ -- Roger Leigh <rleigh@debian.org>  Mon, 14 Jan 2013 21:53:59 +0000
+
+sysvinit (2.88dsf-36) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Handle globbing of /etc/fstab.d/* safely.
+    - Correct erroneous error that an entry for /dev/shm existed in
+      /etc/fstab when no entry was present (Closes: #697537).
+
+ -- Roger Leigh <rleigh@debian.org>  Fri, 11 Jan 2013 23:36:28 +0000
+
+sysvinit (2.88dsf-35) unstable; urgency=low
+
+  [ David Prévot ]
+  * Fix German translation charset.
+
+  [ Roger Leigh ]
+  * initscripts:
+    - To permit enabling of dependency-based boot, add Breaks on older
+      versions of bootchart.  Thanks to Andreas Beckmann.
+      Closes: #694252.
+    - To work around a bug in the Oracle database, which has a faulty
+      check for /dev/shm, continue to mount a tmpfs on /dev/shm rather
+      than /run/shm if one is defined in /etc/fstab.  Closes: #694379.
+  * sysvinit-utils:
+    - Add Breaks: upstart (<< 1.5-1) to avoid breaking the boot with
+      older versions of upstart.  Closes: #694961.
+
+ -- Roger Leigh <rleigh@debian.org>  Mon, 17 Dec 2012 22:50:49 +0000
+
+sysvinit (2.88dsf-34) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts: Don't run mountall until checkroot-bootclean is finished.
+
+  [ Steve Langasek ]
+  * initscripts.postinst: hide from lintian the fact that we're removing
+    /dev/shm, since otherwise a buggy lintian check prevents us from
+    uploading legitimate code to the archive.
+
+ -- Steve Langasek <vorlon@debian.org>  Fri, 16 Nov 2012 14:51:06 -0600
+
+sysvinit (2.88dsf-33) unstable; urgency=low
+
+  [ David Prévot ]
+  * Updated debconf translations:
+    - es.  Thanks to Javier Fernández-Sanguino.  Closes: #686774, #682560.
+    - pt_BR.  Thanks to Adriano Rafael Gomes.  Closes: #686906.
+
+  [ Roger Leigh ]
+  * All bootclean scripts run before bootmisc.  Closes: #677097.
+
+  [ Steve Langasek ]
+  * when running under upstart, emit an 'unmounted-remote-filesystems' event
+    when we're done unmounting in umountnfs.sh so that upstart can finish
+    shutting down.
+  * make the startpar bridge track stopped jobs, not just started ones;
+    required for us to have a smooth event-based shutdown with upstart.
+
+ -- Steve Langasek <vorlon@debian.org>  Fri, 16 Nov 2012 04:30:29 -0800
+
+sysvinit (2.88dsf-32) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * Apply patch to startpar to prevent the use of mlockall on
+    kFreeBSD, which was causing a kernel panic at boot.  Thanks to
+    Petr Salinger for this patch.  Closes: #672959.
+  * Correctly detect service availability with service(8).  Thanks
+    to Alexander Golov for this patch.  Closes: #685212.
+
+ -- Roger Leigh <rleigh@debian.org>  Fri, 31 Aug 2012 23:03:14 +0100
+
+sysvinit (2.88dsf-31) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Remove debugging echo statement from postinst.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 11 Aug 2012 18:27:50 +0100
+
+sysvinit (2.88dsf-30) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Fix /dev/shm to /run/shm migration bug which occurred in chroots
+      when /dev/shm was a mountpoint but /dev was not.  Check
+      specifially for /dev, /dev/shm, run or /run/shm being a mountpoint
+      before attempting to migrate.  This copes with all combinations of
+      mountpoints, directories and symlinks.  Closes: #683103.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 11 Aug 2012 16:44:22 +0100
+
+sysvinit (2.88dsf-29) unstable; urgency=low
+
+  [ Steve Langasek ]
+  * initscripts:
+    - Improve /dev/shm to /run/shm upgrade handling in the postinst
+      (improvement for #674178).
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Remove /lib/init/rw if possible.  Closes: #679612.
+    - If /run is a symlink to /var/run, correct this on both upgrade
+      and on boot.  On upgrade, the proper /run migration will occur
+      on reboot.  On boot, the system will require rebooting to fully
+      migrate /run to a working configuration (but this will only
+      occur on systems which are already broken, it's not an upgrade
+      path).  This correct problems with udev breakage due to /run
+      being mounted twice when /run is a symlink.
+      Closes: #677097, #679523.
+    - Start urandom on initial install, so that a random seed exists on
+      first boot.  Closes: #679972.
+    - Restore creation of /var/log/dmesg (Closes: #681639).
+  * sysv-rc:
+    Remove unused debconf logic in postinst.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 30 Jun 2012 23:21:06 +0100
+
+sysvinit (2.88dsf-28) unstable; urgency=low
+
+  [ Steve Langasek ]
+  * debian/patches/upstart_support.patch: add missing
+    startpar-upstart-inject manpage.
+
+  [ Roger Leigh ]
+  * Updated debconf translations:
+    - ca.  Thanks to Innocent De Marchi.  Closes: #677904.
+    - cs.  Thanks to Miroslav Kure.  Closes: #678680.
+    - da.  Thanks to Joe Hansen.  Closes: #676893.
+    - de.  Thanks to Chris Leick.  Closes: #677753.
+    - fr.  Thanks to Steve Petruzzello.  Closes: #677590.
+    - gl.  Thanks to Jorge Barreiro.  Closes: #678627.
+    - nl.  Thanks to Jeroen Schot.  Closes: #677333.
+    - pl.  Thanks to Michał Kułach.  Closes: #676773.
+    - pt.  Thanks to Miguel Figueiredo.  Closes: #676814.
+    - ru.  Thanks to Yuri Kozlov.  Closes: #677011.
+    - sk.  Thanks to Slavko.  Closes: #676721.
+    - sv.  Thanks to Martin Bagge.  Closes: #676791.
+    - zh_CN.  Thanks to YunQiang Su.  Closes: #676725.
+  * Add missing hardening CPPFLAGS.  Thanks to Simon Ruderich.
+    Closes: #678878.
+  * Update clean run to cope with nonexistent startpar.
+  * initscripts:
+    - Only run update-rc.d in maintainer scripts when the init
+      script exists and is executable.  Closes: #671124.
+    - Break initramfs-tools (<< 0.104), needed to prevent initrd
+      generation failure since older initramfs-tools can't cope with
+      /etc/mtab being a symlink.  Closes: #668650.
+    - Don't mount with -o nodev on kFreeBSD.  Closes: #669162.
+    - Set up /run correctly in a chroot when running debootstrap.
+      Thanks to Serge Hallyn.  initscripts.postinst: if /dev is not a
+      separate partition and we're in a chroot, then create /run/shm
+      and make /dev/shm a symbolic link to it, as we would expect to
+      find in a upgraded and rebooted running system. LP: #974584.
+      Closes: #674178.
+  * sysvinit:
+    - rc and startpar distinguish between LSB not installed and
+      not configured failure conditions.  Thanks to Nate Coraor.
+      Closes: #625463.
+  * sysv-rc:
+    - Dependency-based booting is activated unconditionally.  Scripts
+      without LSB headers will generally be ordered after all other
+      scripts, but before scripts requiring $all to be started, such as
+      rc.local, but this is not guaranteed.  Add an LSB header if you
+      need to guarantee the ordering of scripts.
+      Closes: #676463, #678231, #676473.
+    - update-rc.d uses absolute path to insserv, to give better error
+      messages to non-root users where /sbin is not in the PATH.
+      Thanks to Regid Ichira.  Closes: #637390.
+
+  [ Paul Menzel ]
+  * Fix usage message in /etc/init.d/motd.  Closes: #676910.
+
+ -- Roger Leigh <rleigh@debian.org>  Wed, 27 Jun 2012 23:00:45 +0100
+
+sysvinit (2.88dsf-27) unstable; urgency=low
+
+  [ Salvatore Bonaccorso ]
+  * Remove reference to /usr/share/initscripts/default.rcS.
+    With commit d0388ba464e69b1b7915a3d9071cfcba21d0102c /etc/default/rcS
+    was made a regular conffile. Remove reference to original location with
+    default values.
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Don't fail in the absence of /proc/meminfo.  The ram_size and
+      swap_size functions in /lib/init/tmpfs.sh always return true.
+      Closes: #676669.
+
+ -- Roger Leigh <rleigh@debian.org>  Fri, 08 Jun 2012 22:29:04 +0100
+
+sysvinit (2.88dsf-26) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts:
+    - /run/shm is mounted noexec.  Closes: #386368.
+    - The RAMSHM and RAMTMP settings in /etc/default/rcS are used if
+      present, though the replacement settings in /etc/default/tmpfs
+      will override these, if enabled.
+    - Revert RAMTMP setting to be disabled by default.
+      Closes: #630615, #665635, #666698, #674517.
+    - Don't prompt the user on upgrade if rcS was not modified by
+      the admin.  Closes: #674460.
+  * sysvinit-utils:
+    - Fix typo in fstab-decode(8).  Thanks to Bjarni Ingi Gislason.
+      Closes: #674208.
+
+ -- Roger Leigh <rleigh@debian.org>  Mon, 28 May 2012 17:58:38 +0100
+
+sysvinit (2.88dsf-25) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * Build with hardening flags enabled; CFLAGS and LDFLAGS are passed
+    to all build commands.
+  * initscripts:
+    - /etc/default/rcS is no longer managed by ucf, and is a regular
+      conffile.  Drop the UTC setting, which has been migrated to
+      /etc/adjtime by util-linux.  Break util-linux << 2.20.1-5 in order
+      to ensure correct migration of the UTC setting before the file is
+      upgraded.
+    - Use ifquery in /etc/network/if-up.d/mountnfs to replace complex
+      parsing.  Also only run if inet or inet6 interfaces have been
+      configured, to avoid freezing when the interface hasn't yet
+      been configured (Closes: #674039).
+    - %VM tmpfs size calculation works when swap is disabled.
+
+ -- Roger Leigh <rleigh@debian.org>  Tue, 22 May 2012 23:46:14 +0100
+
+sysvinit (2.88dsf-24) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * initscripts:
+    - Don't generate or touch /etc/motd.  Instead, the dynamic part of
+      /etc/motd is created as /run/motd.dynamic, leaving /etc/motd
+      entirely under the control of the system administrator.  If
+      /etc/motd is a symlink to /run/motd, /etc/motd.tail is moved
+      back to /etc/motd.  Closes: #353229, #624391, #668307.  /etc/motd
+      is not removed if initscripts is purged, since it's not owned by
+      initscripts.
+    - By default, /run/motd is just the output of uname, preserving the
+      existing behaviour.  However, should the administrator wish to
+      include dynamic information in the motd, they may write scripts
+      to update /run/motd.dynamic as they please.  Closes: #437176.
+    - motd generation is split from bootlogs into a separate motd
+      init script.
+    - bootlogs init script has been removed; current logging daemons
+      handle this themselves, making this script redundant.
+    - tmpfs mounts are never cleaned by bootclean.sh.  Cleaning /run
+      can lead to nonfunctional input when Xorg starts.  Closes: #669949.
+  * sysvinit-utils:
+    - Suggest rather than Recommend bootlogd.
+
+  [ Kel Modderman ]
+  * sysv-rc:
+    - Run check_divert in postinst to make sure /usr/sbin/update-rc.d
+      not symlinked to /usr/sbin/update-rc.d-insserv.  Closes: #670085.
+
+  [ Steve Langasek ]
+  * Install the startpar bridge now that dh_installinit in Debian handles
+    this.  Closes: #660824.
+  * Give startpar a listening backlog on its socket for upstart connections,
+    since there's no protocol-level queuing for unix sockets and these
+    connections tend to come in fast and furious at boot.
+  * Add upstart support to invoke-rc.d, per the policy discussion in bug
+    #591791.  Closes: #671284.
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 29 Apr 2012 23:52:14 +0100
+
+sysvinit (2.88dsf-23) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * Acknowledge NMU for translation updates.  Thanks to Christian
+    Perrier.
+  * debian/control:
+    - Upgrade to Standards-Version 3.9.3.
+    - Build-Depend on debhelper v9.
+    - Correct Vcs-Git URL.
+  * debian/rules:
+    - Use DEB_HOST_ARCH_OS = hurd rather than
+      DEB_HOST_ARCH = hurd-i386.   Thanks to Pino Toscano.
+  * debian/patches:
+    - 11_lfs_cflags.patch: Add patch for enabling large file support,
+      needed on GNU/Hurd, but useful for all platforms.
+    - 73_lfs_cflags.patch: Add patch for enabling large file support
+      in startpar.
+  * initscripts:
+    - Moved RAM* settings from /etc/default/rcS to /etc/default/tmpfs.
+      This ensures that the settings are equivalent for upgrades and
+      new installations, but will require manual configuration of the
+      settings for upgrades (no migration from /etc/default/rcS to
+      /etc/default/tmpfs will take place, due to tmpfs being a
+      conffile).  tmpf(5) manual page added to document all aspects
+      of tmpfs configuration, including the existing documentation in
+      rcS(5).
+    - Drop the use of .ramfs dotfiles in /run and /run/lock.  These
+      were a legacy of /lib/init/rw and were not actually used by
+      anything.  Closes: #403863.
+    - Drop /etc/init.d/mountoverflowtmp.  This has been merged into
+      the general tmpfs on /tmp handling functions.  This means the
+      generic RAMTMP configuration is used for the overflowtmp.
+      Closes: #567539.
+    - It is now possible to configure a tmpfs mount size limit as a
+      percentage of the total VM size (%VM) as well as a percentage
+      of the RAM size (%).  This is computed by tmpfs.sh and the
+      tmpfs mounts are remounted with the updated size limit after
+      swap becomes available.
+    - An fstab entry for /tmp overrides RAMTMP.  Document tmpfs
+      override and tmpfs defaults in tmpfs(5), also undeprecating the
+      tmpfs settings.  Closes: #585540, #665995.
+    - An fstab entry for /run/lock or /run/shm overrides RAMLOCK and
+      RAMSHM.
+    - bootclean cleans /tmp, /run and /run/lock before any filesystems
+      are mounted as well as after local and network mounts.  This
+      permits cleaning of directories which would otherwise be hidden
+      by mountpoints later in the boot process.
+      Closes: #55707, #558000, #666871.  Additionally clean up
+      /lib/init/rw in case any files were hidden by the (now removed)
+      tmpfs mount at this location.  Closes: #652625.
+    - Removed last trace of the long-removed EDITMOTD from the
+      postinst.  Closes: #438895.
+    - Removed documentation of #346342 in rcS(5).  This is no longer
+      an issue now tzdata keeps a copy of the data on the rootfs.
+      Closes: #385172.
+    - Correct description of TMPTIME in rcS(5).  Thanks to Alan J.
+      Greenberger.  Closes: #562500.
+    - urandom: Applied a series of patches from John Denker to
+      improve the integrity of random number generation.  Many thanks.
+      Closes: #596479, #596480, #596481, #596482, #596483.
+  * sysv-rc:
+    - Remove old upgrade logic from maintainer scripts not required
+      for wheezy.
+    - Migrate users of obsolete static boot ordering to dynamic boot
+      ordering.
+    - Remove use of /etc/init.d/.legacy-bootordering.  Closes: #668312.
+    - Improve help text of debconf message when it is not possible to
+      automatically enable dynamic boot ordering.  Provide explicit
+      instructions for how to purge obsolete init scripts.
+      Closes: #550425.
+    - etc/init.d/rc: Ensure linprocfs is mounted on kFreeBSD.  Thanks
+      to Robert Millan.  Closes: #659480.
+    - Drop undocumented CONCURRENCY setting from /etc/init.d/rc.
+      Closes: #518249, #540448, #539261.  Note that this still contains
+      internal fallbacks to support non-insserv booting, which may be
+      removed at a later date.
+    - invoke-rc.d:
+      + Minor manual page corrections.  Thanks to Anthony Fiumara.
+        Closes: #664816.
+      + Remove mention of the "dpkg Programmers' Manual" and replace
+        with references to Debian Policy.  Closes: #543793.
+    - update-rc.d:
+      + Correctly warn about non-LSB standard runlevels.  Thanks to
+        Chris Hiestand for this patch.  Closes: #614895.
+      + Remove obsolete documentation of
+        /var/lib/sysv-rc/legacy-bootsequence.  Thanks to Thomas Hood.
+        Closes: #623051.
+  * sysvinit:
+    - Minor corrections for halt(8) manual page.  Thanks to
+      Christoph Anton Mitterer.  Closes: #587923.
+    - Installation with debootstrap --variant=fakechroot now works, due
+      to only migrating the old control channel when it is still
+      present.  Thanks to Michael Gilbert.  Closes: #596284.
+  * sysvinit-utils:
+    - Recommend bootlogd.  Closes: #659490.  This means that booklogd
+      will be installed by default, but will be removable.
+      Closes: #232569.
+    - Correct documentation of the startpar -i option.  Closes: #545438.
+    - Correct startpar(8) SEE ALSO section.  Closes: #634146.
+    - Correct wording in service(8).  Thanks to Joey Hess and Regid
+      Ichira.  Closes: #545401, #667745.
+
+  [ Steve Langasek ]
+  * debian/service/service: fix upstart compatibility to not try to use the
+    upstart commands when init isn't upstart.  Closes: #636054.
+  * debian/rules: pass CFLAGS when building startpar.
+  * Fix startpar to not run init scripts that have matching upstart jobs,
+    instead waiting for a signal from upstart.  Closes: #660824.
+  * sysvinit:
+    - Don't restart or perform initctl migration if systemd is
+      running.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 21 Apr 2012 12:11:45 +0100
+
+sysvinit (2.88dsf-22.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix pending l10n issues. Debconf translations:
+    - Dutch; (Jeroen Schot).  Closes: #626270
+    - Polish (Michał Kułach).  Closes: #658156
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 13 Mar 2012 07:03:06 +0100
+
+sysvinit (2.88dsf-22) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * mountall.sh uses mknod rather than mkfifo (Closes: #658045).
+
+ -- Roger Leigh <rleigh@debian.org>  Mon, 30 Jan 2012 23:44:21 +0000
+
+sysvinit (2.88dsf-21) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * debian/patches/72_path_max.patch: New patch for startpar.  Don't
+    use PATH_MAX, to fix compilation on GNU/Hurd.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 28 Jan 2012 11:14:53 +0000
+
+sysvinit (2.88dsf-20) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * debian/patches/71_signalfd.patch: New patch for startpar.  Don't
+    include <sys/signalfd.h>, which is not used and breaks
+    compilation on architectures not having this Linux-specific
+    header.  (Closes: #657676)
+  * sysvinit:
+    - Don't restart init when a chroot is detected, to avoid lengthy
+      timeouts.  Use ischroot from debianutils to determine whether
+      the postinst is being run in a chroot environment, as already
+      done by initscripts.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 28 Jan 2012 00:07:39 +0000
+
+sysvinit (2.88dsf-19) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * debian/control:
+    - initscripts adds versioned Breaks on autofs (<< 5) since
+      autofs 4.x does not cope with /etc/mtab symlinked to
+      /proc/mounts.  Users should upgrade to autofs5, which works
+      correctly.  (Closes: #653126)
+    - initscripts Breaks aide << 0.15.1-5 and sysklogd << 1.5-6.2 now
+      they support /run.
+    - sysvinit Pre-Depends on initscripts >= 2.88dsf-13.3 in order
+      to transition initctl to /run.
+  * sysvinit:
+    - /sbin/init control channel FIFO is /run/initctl rather than
+      /dev/initctl (Linux) or /etc/.initctl (FreeBSD).  The postinst
+      migrates the running init to use the new control channel by
+      replacing the old channel with a symlink prior to issuing a
+      SIGUSR1 to cause init to reopen its control channel and then
+      exec of the new version of init using the new path.  Thanks
+      to Robert Millan.  (Closes: #638019)
+    - Add Catalan (ca) translation.  Thanks to Innocent De Marchi.
+      (Closes: #622785)
+  * sysvinit-utils:
+    - Upgrade to startpar 0.58.  Thanks to Dr. Werner Fink at SuSE for
+      this updated release.  This release incorporates all of the
+      existing Debian patchset; debian/patches/7[1-9]* have now been
+      dropped.
+  * initscripts:
+    - mountall.sh recreates /run/initctl and sends SIGUSR1 to init
+      if needed.
+    - /etc/init.d/rc.local uses only $all in Required-Start;
+      $remote_fs and $syslog being redundant.  Thanks to Regid Ichira.
+      (Closes: #635025)
+    - rcS.5 documents that RAMTMP defaults to yes for new
+      installations, and no for upgrades (since RAMTMP is not present
+      in /etc/default/rcS).  (Closes: #652337)
+    - /etc/default/rcS is updated using ucf.  (Closes: #648433)
+    - umountfs uses more sophisticated sed expression to compute
+      PROTECTED_MOUNTS, to support unionfs and more complex cases.
+      Thanks to Michele Mazzucchi for this patch.  (Closes: #655582)
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 22 Jan 2012 17:07:46 +0000
+
+sysvinit (2.88dsf-18) unstable; urgency=low
+
+  [ Roger Leigh ]
+  debian/rules: Fix FTBFS on Hurd by moving file renaming to a later
+  point in the build.
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 22 Dec 2011 22:59:47 +0000
+
+sysvinit (2.88dsf-17) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * debian/control:
+    - initscripts adds versioned Breaks on readahead-fedora
+      (<< 2:1.5.6-3), which removed splash support.  Thanks to Sven
+      Joachim.
+    - Update initscripts Breaks for fixed version of libpam-mount.
+  * initscripts:
+    - Document /lib/init/rw removal and cleanup in NEWS.
+      (Closes: #652512).
+    - /etc/network/if-up.d/mountnfs handles whitespace correctly
+      (Closes: #612378).  grep on /etc/network/run/ifstate is corrected
+      (inverted the logic).  Thanks to Jamie Heilman and Corey Hickey.
+  * sysvinit: Install reboot and halt commands with a -sysv suffix
+    on GNU/Hurd.  (Closes: #652830)
+
+  [ Josh Triplett ]
+  * Split bootlogd into a separate package. (Closes: #545181)
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 22 Dec 2011 20:58:36 +0000
+
+sysvinit (2.88dsf-16) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * debian/control:
+    - initscripts versioned Breaks use correct epochs and binary
+      package names.
+    - initscripts Breaks libpam-mount <= 2.11-1, which does not
+      support a read-only mtab.  This is supported in new upstream
+      versions.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 17 Dec 2011 15:57:24 +0000
+
+sysvinit (2.88dsf-15) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * /etc/init.d/skeleton: Small whitespace cleanup.  Thanks to
+    Peter Eisentraut. (Closes: #651862)
+  * Move all patches in debian/startpar/patches to debian/patches
+    and make debian/startpar/ content a separate patch applied to
+    startpar/.  Build and install startpar in debian/rules.
+    (Closes: #652097).
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 15 Dec 2011 00:24:22 +0000
+
+sysvinit (2.88dsf-14) experimental; urgency=low
+
+  [ Kel Modderman ]
+  * Add support for s390x, thanks to Aurelien Jarno <aurel32@debian.org>.
+    (Closes: #641107)
+
+  [ Roger Leigh ]
+  * debian/rules:
+    - Add build-arch and -indep rules. (Closes: #648472)
+    - Remove dpatch usage.
+    - Use dh and debhelper compat level 9.
+  * debian/control:
+    - Add git version control information.
+    - Upgrade to Standards-Version 3.9.2.
+    - Add myself to Uploaders.
+  * Use dpkg 3.0 (quilt) source format.  Rediffed
+    debian/patches/40_multiarch_libcrypt.patch which was not well
+    formed and failed to apply.
+  * initscripts:
+    - Make /etc/mtab a symlink to /proc/mounts. (Closes: #494001)
+      Note that this is only done when the root filesystem is writable
+      and /proc/mount is readable.
+    - Support the ceph network filesystem. (Closes: #580579).  Thanks
+      to Sage Weil.
+    - Restore boot-time cleaning of /var/run and /var/lock, used by
+      systems which currently do not use a tmpfs for /run.
+    - Remove /lib/init/rw: Add Breaks for all packages which used
+      /lib/init/rw, and which now use /run.  Unmount and remove
+      following upgrade.
+    - Don't create /run/.run-transition on upgrade, only on actually
+      setting up a transitional bind mount.
+    - Add Breaks on all packages previously using /lib/init/rw, in
+      order to permit removal of /lib/init/rw.  It is not possible to
+      remove prior to rebooting due to initscripts being required to
+      be configured by the packages transitioning to /run.  Remove in
+      wheezy+1.
+    - Remove trailing period from the initscripts init script log
+      message.  (Closes: #648881).  Thanks to Clint Byrum.
+    - /etc/network/if-up.d/mountnfs: grep: character class syntax is
+      [[:space:]], not [:space:]. (Closes: #631077, #645655).  Thanks to
+      Milan Kocian and Jan-Benedict Glaw.  Also simplify function logic
+      using a for loop rather than a while loop.  Thanks to Corey Hickey.
+  * sysv-rc:
+    - Remove splash support and use of removed /dev/.initramfs.
+      (Closes: #643558).  Thanks to Michael Biebl.
+
+ -- Roger Leigh <rleigh@debian.org>  Tue, 13 Dec 2011 20:11:48 +0000
+
+sysvinit (2.88dsf-13.13) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Replace "cons25" with "xterm" on GNU/kFreeBSD.
+
+ -- Robert Millan <rmh@debian.org>  Wed, 02 Nov 2011 23:42:14 +0000
+
+sysvinit (2.88dsf-13.12) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * 92_kfreebsd_ifdown.patch: Shut down network interfaces correctly on
+    GNU/kFreeBSD.  Thanks Guillem.  (Closes: #606565)
+  * Replace `ttyd' with `cuau' in inittab for GNU/kFreeBSD.  Thanks Tuco.
+    (Closes: #587162)
+  * Use linux-any in debian/control to avoid hardcoded lists of non-Linux
+    arches.  (Closes: #634514)
+
+ -- Robert Millan <rmh@debian.org>  Fri, 14 Oct 2011 23:27:34 +0200
+
+sysvinit (2.88dsf-13.11) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * initscripts provides /run/sendsigs.omit.d as soon as /run is
+    available.
+  * initscripts bootlogs: Remove support for /dev/.udev.log,
+    which is no longer needed now udev uses /run.
+  * initscripts umountroot: Remove ubuntu-specific patch which
+    created directories on the root filesystem prior to umounting it.
+    This was never applicable to Debian, and is now no longer required
+    following the introduction of /run (Closes: #633541).
+
+ -- Roger Leigh <rleigh@debian.org>  Wed, 13 Jul 2011 19:47:10 +0100
+
+sysvinit (2.88dsf-13.10) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Correct selinux-policy-default Breaks versioning (use <= rather
+    than <<).
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 09 Jun 2011 20:31:00 +0100
+
+sysvinit (2.88dsf-13.9) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Try both old and multiarch paths to cope with buildds which don't
+    yet have a multiarch libc installed.
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 09 Jun 2011 14:50:53 +0100
+
+sysvinit (2.88dsf-13.8) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * initscripts Breaks all selinux-policy-default versions up to and
+    including 2:0.2.20100524-9, which do not support /run.
+  * Add restorecon support for selinux to /run in mountkernfs.
+    (Closes: #628107).  Thanks to Martin Orr for this patch.
+  * Search for libcrypt using multiarch path (Closes: #629677).
+
+ -- Roger Leigh <rleigh@debian.org>  Thu, 09 Jun 2011 13:35:56 +0100
+
+sysvinit (2.88dsf-13.7) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * Non-maintainer upload.
+  * Correct version check used for reboot notification in initscripts
+    postinst.
+  * Don't use "rm -rf" when creating compatibility links in chroots;
+    use plain rmdir and abort with an error if it fails.  This is in
+    order to avoid removing host data if e.g. /run from the host is
+    already bind mounted on the chroot /run, which would remove the
+    contents of the host /run if upgrading initscripts in the chroot.
+  * Restore rpcbind/portmap changes from 2.88dsf-13.5.
+  * Add restorecon support for selinux using new paths. (Closes: #626725)
+    Thanks to Martin Orr for this patch.
+  * Use new debianutils "ischroot" program to detect if in a chroot in
+    the initscripts postinst more reliably.  Depend on initscripts
+    version 4 or greater to ensure ischroot is available.
+    (Closes: #626846)
+
+ -- Roger Leigh <rleigh@debian.org>  Wed, 18 May 2011 23:12:30 +0100
+
+sysvinit (2.88dsf-13.6) unstable; urgency=low
+
+  [ Roger Leigh ]
+  * Non-maintainer upload.
+  * Don't remount filesystems mounted in the initramfs until mtab
+    exists.  Use the existing reload functionality of mountkernfs
+    an mountdevsubfs to allow mtab.sh to trigger the remounts.
+    (Closes: #623174)
+  * Revert to using absolute paths in compatibility symlinks in order
+    to comply with Policy §10.5 symlink rules. (Closes: #626263)
+  * The permissions of /tmp are only set when root is writable.
+    (Closes: #623934)
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 14 May 2011 00:30:52 +0100
+
+sysvinit (2.88dsf-13.5) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * Non-maintainer upload.
+  * Unify mount logic shared between mountkernfs.sh, mountdevsubfs.sh
+    and mtab.sh
+    - all functions use domount() from /lib/init/mount-functions.  This
+      merges in the functionality of domtab() in mtab.sh, which was
+      almost entirely identical.  domount is now capable of mounting and
+      remounting (with and without mtab updates) as well as updating
+      /etc/mtab.
+    - mtab.sh calls mountkernfs.sh and mountdevsubfs with an "mtab"
+      argument to do the mtab generation for early mounts.  This means
+      that the mount logic is not needlessly duplicated, and does not
+      require two copies to be kept exactly in sync.  This reduces the
+      risk of problems as a consequence of subtle differences between
+      the two scripts.
+    - mount options may be specified in either /etc/default/tmpfs or
+      in /etc/fstab, and will supersede hard coded defaults.  The
+      the values in fstab (if any) will supersede those in
+      /etc/default/tmpfs should an entry be present.  These values are
+      also used for remounting, which means that filesystems mounted in
+      an initramfs and moved onto the root filesystem prior to init
+      starting will be remounted with the correct user-specified
+      options.
+    - Improve robustness of stat checks when comparing directories.
+    - mountkernfs.sh and mountdevsubfs.sh are idempotent, so allow for
+      repeated invocation.  This is needed to allow the same code to
+      be used for mounting, remounting and mtab generation.
+    - Enabling RAMLOCK, RAMSHM and RAMTMP in /etc/default/rcS is no longer
+      required if the filesystems are present in /etc/fstab
+  * /etc/default/tmpfs is deprecated
+    - If changing the default size limits, adding an entry to /etc/fstab
+      is preferred compared with editing /etc/default/tmpfs.  This also
+      permits modifying the default mount options, and setting additional
+      mount options.
+    - If /etc/default/tmpfs has been modified from the defaults, any
+      needed entries will be created in /etc/fstab on upgrade, to
+      preserve the settings from /etc/default/tmpfs.  The entries in
+      /etc/fstab will subsequently override the settings in
+      /etc/default/tmpfs.
+  * The mount options for /run are made stricter when possible.  For
+    example, if /run/shm is a separate filesystem, it may be safely
+    mounted with "noexec".
+  * Compatibility symbolic links are relative, not absolute.  e.g.
+    /var/lock is ../run/lock rather than /run/lock.  This means that if
+    you're using a chroot from the host system, you'll always be using
+    locations in the chroot, rather than the host, when following the
+    links.
+  * Updated documentation in initscripts README.Debian and rcS(5).
+
+  [ Kel Modderman ]
+  * Consider rpcbind as alternative to portmap in mountnfs ifupdown
+    script. Thanks to Jamie Heilman and Arthur de Jong.
+    (Closes: #620788)
+
+ -- Roger Leigh <rleigh@debian.org>  Fri, 22 Apr 2011 15:25:25 +0100
+
+sysvinit (2.88dsf-13.4) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * Non-maintainer upload.
+
+  [ Kel Modderman ]
+  * Remove code from /etc/init.d/bootmisc.sh which is not needed with modern
+    kernel which do not support BSD ptys. The udev check is not reliable
+    anymore due to /run/. Thanks Marco d'Itri (Closes: #620784)
+  * Handle user interupt of fsck in etc/init.d/checkfs.sh and
+    init.d/checkroot.sh. Trap SIGINT and handle fsck exit status of 32.
+    (Closes: #608534)
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 16 Apr 2011 16:50:51 +0100
+
+sysvinit (2.88dsf-13.3) experimental; urgency=low
+
+  [ Roger Leigh ]
+  * Non-maintainer upload.
+  * Support for new top-level directory /run to replace /var/run,
+    /var/lock, /dev/shm and /lib/init/rw as a place to store transient
+    writable data which should not be preserved across a system
+    reboot (Closes: #186892, #616571, #620191).  /run fixes existing
+    issues with RAMRUN and RAMLOCK options using tmpfs on /var/run and
+    /var/lock (Closes: #423405, #481546, #564635, #607136, #620735).
+    Additionally, /run/shm replaces /dev/shm and may share the same
+    tmpfs as /run if RAMSHM is set to "no" in /etc/default/rcS.  /tmp
+    may also be configured to be a tmpfs if RAMTMP is set to "yes" in
+    /etc/default/rcS.  /tmp may also be configured to use /run directly if
+    it is symlinked to /run/tmp, for example.
+    Summary:
+      /var/run → /run
+      /var/lock → /run/lock
+      /dev/shm → /run/shm
+      /lib/init/rw → /run (not transitioned automatically)
+      /dev/.* → /run (not transitioned automatically)
+    These changes do not take effect until the system is rebooted as
+    is currently done for /lib/init/rw setup.  Prior to a reboot, the
+    paths are made available via bind/nullfs/firmlink mounts, depending on
+    the platform.  Following a reboot, the old paths will be converted to
+    symlinks, or bind/nullfs/firmlink mounts where symlinking is not
+    possible, to allow access via either the old or new paths, to permit
+    programs using the old paths to transition to use the new paths for
+    wheezy.
+    - debian/initscripts.postinst:
+      Take chroot detection logic from udev postinst (existing logic was
+      broken).  Add detection logic for vserver environments and Hurd.
+      Trigger reboot to complete transition.
+      If the system has not yet transitioned to a tmpfs-based /run, set up
+      bind mounts as follows:
+        /var/run → /run
+        /var/lock → /run/lock
+        /dev/shm → /run/shm
+      On reboot, the system will complete the migration to a tmpfs-based
+      /run; this creates the directory heierachy from the old paths to
+      enable the use of the new /run paths prior to a restart.  This means
+      packages may transition to using /run with a versioned dependency
+      upon initscripts.
+      Remove special handling for RAMRUN and RAMLOCK, which is now taken
+      care of by /run.
+      If in a chroot environment, just create symlinks from the new names
+      to the existing locations, since otherwise the changes would be
+      lost, and since rcS scripts aren't run the transition won't
+      complete.
+    - debian/src/initscripts/Makefile:
+      Provide top-level /run.
+    - debian/src/initscripts/doc/README.Debian:
+      Document new use of RUN_SIZE and LOCK_SIZE.
+      Document use of /run rather than /lib/init/rw.
+      Document use of SHM_SIZE and TMP_SIZE.
+    - debian/src/initscripts/etc/init.d/checkroot.sh:
+      Use /run in place of /lib/init/rw.
+    - debian/src/initscripts/etc/default/tmpfs:
+      Document TMPFS_SIZE, RUN_SIZE and LOCK_SIZE (Closes: #483643).
+      Document TMP_SIZE and SHM_SIZE.
+    - debian/src/initscripts/etc/init.d/mountkernfs.sh:
+      Create /run, /run/sendsigs.omit.d and /run/lock.
+      Mount /run/lock as a separate tmpfs if RAMLOCK=yes.
+      /run/lock has 01777 permissions to match /var/lock.
+      Mount /tmp as a separate tmpfs if RAMTMP=yes or / is being mounted
+      read-only (Closes: #503805, #585543).
+      Drop mounting of /var/run and /var/lock.
+    - debian/src/initscripts/etc/init.d/mountdevsubfs.sh:
+      Create /run/shm.  Mount /run/shm as a separate tmpfs if RAMSHM=yes.
+    - debian/src/initscripts/etc/init.d/mtab.sh:
+      domtab mirrors behaviour of domount in mount-functions exactly, to
+      prevent duplicate mounts (required for bind mount support).
+      Bind mount /run/init and drop mounting of /var/run.  Mount /run/lock
+      in place of /var/lock.
+      Mount /tmp if RAMTMP=yes.
+      Mount /run/shm if RAMSHM=yes.
+    - debian/src/initscripts/etc/init.d/sendsigs:
+      Use new paths:
+        files: /run/sendsigs.omit /lib/init/rw/sendsigs.omit
+        dirs: /run/sendsigs.omit.d/ /lib/init/rw/sendsigs.omit.d/
+    - debian/src/initscripts/etc/init.d/umountfs:
+      Ignore /run.  Continue to ignore /lib/init/rw in order to handle
+      clean shutdown.  No longer ignore /var/run and /var/lock.
+    - debian/src/initscripts/etc/init.d/umountnfs.sh:
+      Check for presence of .ramfs than configuration variable when
+      skipping /var/run and /var/lock.
+      Ignore /run.  Continue to ignore /lib/init/rw in order to handle
+      clean shutdown.  No longer ignore /var/run and /var/lock.
+    - debian/src/initscripts/lib/init/bootclean.sh
+      Don't clean /var/run and /var/lock (Closes: #378776).  Because
+      these directories are now a tmpfs, cleaning no longer makes sense.
+    - debian/src/initscripts/lib/init/tmpfs.sh:
+      Read /etc/default/tmpfs and provide defaults if unset.
+    - debian/src/initscripts/lib/init/mount-functions.sh:
+      Support bind mounts in domount() (Closes: #353943).
+      Drop support for mounting /var/run and /var/lock as separate
+      tmpfs filesystems.  Symlink /var/run to /run and /var/lock to
+      /run/lock if possible.  If /var/run and /var/lock are directories,
+      attempt to remove and symlink if successful, or else bind mount.
+    - debian/src/initscripts/lib/init/vars.sh:
+      Read /etc/default/rcS and provide defaults if unset.
+    - debian/src/initscripts/man/rcS.5:
+      Drop documentation of RAMRUN.
+      Update documentation for RAMLOCK (Closes: #406685).
+      Document RAMTMP and RAMSHM.
+    - debian/src/initscripts/share/default.rcS:
+      Remove RAMRUN.
+      Add RAMSHM and RAMTMP.
+      RAMLOCK, RAMSHM and RAMTMP default to enabled for new installs.
+
+  [ Michael Biebl ]
+  * Remove dead usplash support code (Closes: #599241, #599734, #612594).
+
+  [ Martin F. Krafft ]
+  * Add comments to /etc/default/rcS (Closes: #530582).
+
+  [ Samuel Thibault ]
+  * Hurd portability for initscripts postinst and init scripts.
+    Hurd does not currently support tmpfs mounts, but will do in the
+    future.  Use firmlinks in place of bind mounts.
+
+ -- Roger Leigh <rleigh@debian.org>  Sat, 16 Apr 2011 01:17:29 +0100
+
+sysvinit (2.88dsf-13.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix pending l10n issues. Debconf translations:
+    - Danish (Joe Hansen).  Closes: #599430
+    - Brazilian Portuguese (Adriano Rafael Gomes).  Closes: #605851
+    - Slovak (Slavko).  Closes: #614193
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 05 Apr 2011 07:24:09 +0200
+
 sysvinit (2.88dsf-13.1) unstable; urgency=low
 
   * Non-maintainer upload.

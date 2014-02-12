@@ -2,39 +2,37 @@ tmpfs
 -----
 
 Tmpfs can be used as virtual memory filesystem. glibc 2.2 and above
-expects a tmpfs to be mounted at /dev/shm for POSIX shared memory,
-this is done automatically by /etc/init.d/mountdevsubfs.sh early in
-the boot process. You can limit tmpfs max size by setting the
-SHM_SIZE variable to a desired size in the /etc/default/tmpfs file
-to prevent tmpfs from using up all system memory.
+expects a tmpfs to be mounted at /run/shm (/dev/shm) for POSIX shared
+memory; this is done automatically by /etc/init.d/mountdevsubfs.sh
+early in the boot process.  A tmpfs will also be mounted on /run as a
+writable location available from early boot.  Optionally, tmpfs
+filesystems may be mounted on /run/lock and /tmp.  The tmpfs
+filesystems to be mounted are configured in /etc/default/rcS.  Please
+see rcS(5) for details.
 
-A tmpfs can also be mounted over /var/run/ and /var/lock/. This can
-be achieved by setting the RAMRUN and RAMLOCK variables to "yes" in
-the /etc/default/rcS file. A size limit for the tmpfs filesystem
-mounted over /var/run/ and /var/lock/ can be set via the RUN_SIZE
-and LOCK_SIZE variables in the /etc/default/tmpfs file.
-
-If TMPFS_SIZE is set in /etc/default/tmpfs, it will be used as the
-default value for SHM_SIZE, RUN_SIZE and LOCK_SIZE. Otherwise, kernel
-defaults are used.
+Size limits may be set of any of the ram file systems (tmpfs) mounted
+on /run, /run/lock, /run/shm or /tmp.  Please see rcS(5) for details.
+Note that /tmp may be a symlink to e.g. /run/tmp, making it possible
+to use a single tmpfs for all writable filesystems other than /var;
+the directory pointed to by the symlink will be created if it does not
+already exist.
 
 
 sendsigs process omission interface
 -----------------------------------
 
-Since initscripts package version 2.86.ds1-48, /etc/init.d/sendsigs
-is able to omit processes from being killed by killall5(8). Process
-id's listed in /var/run/sendsigs.omit, /lib/init/rw/sendsigs.omit or
-any file in the /lib/init/rw/sendsigs.omit.d/ directory will be
-omitted by sendsigs.
+Since initscripts package version 2.86.ds1-48, /etc/init.d/sendsigs is
+able to omit processes from being killed by killall5(8). Process id's
+listed in /run/sendsigs.omit, or any file in the /run/sendsigs.omit.d/
+directory will be omitted by sendsigs.
 
-The recommended practise for adding a process id for omission is to
-create a file in /lib/init/rw/sendsigs.omit.d/<package name>
-containing the process id that is to be omitted by sendsigs.
+The recommended practice for adding a process id for omission is to
+create a file in /run/sendsigs.omit.d/<package name> containing the
+process id that is to be omitted by sendsigs.
 
-This feature is only to be used for processes that need to be
-running when remote file systems are umounted, and that have
-current working directory set to a directory in the root file system.
+This feature is only to be used for processes that need to be running
+when remote file systems are umounted, and that have current working
+directory set to a directory in the root file system.
 
 
 /sys in /etc/fstab
