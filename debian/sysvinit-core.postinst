@@ -5,6 +5,9 @@
 
 set -e
 
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
 # Restart init, and migrate to /run/initctl if needed.
 do_restart() {
 	INITCTL=/run/initctl
@@ -83,6 +86,16 @@ rm -f /etc/ioctl.save
 if [ ! -f /etc/inittab ]
 then
 	cp -p /usr/share/sysvinit/inittab /etc/inittab
+elif [ "$(uname)" = GNU ] && fgrep -q '/libexec/getty' /etc/inittab; then
+	rm -f -- /etc/inittab.dpkg-new
+	sed -e '/^[^#]/ s|/libexec/getty|/sbin/getty|' \
+	    < /etc/inittab > /etc/inittab.dpkg-new
+
+	db_get sysvinit/hurd-fix-inittab
+	if [ "${RET}" = "true" ]; then
+		mv -- /etc/inittab /etc/inittab.dpkg-old
+		mv -- /etc/inittab.dpkg-new /etc/inittab
+	fi
 fi
 
 restart=yes
@@ -96,7 +109,7 @@ fi
 
 # If systemd is running, don't restart init or doing any initctl
 # migration.
-if [ -e /sys/fs/cgroup/systemd ]; then
+if [ -d /run/systemd/system ]; then
 	restart=no
 fi
 if [ "$(uname -s)" = "GNU" ]; then
