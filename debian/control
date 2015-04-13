@@ -16,8 +16,8 @@ Build-Depends:
  libsepol1-dev [linux-any]
 Standards-Version: 3.9.5
 Homepage: http://savannah.nongnu.org/projects/sysvinit
-Vcs-Git: git://anonscm.debian.org/collab-maint/sysvinit
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/sysvinit
+Vcs-Git: git://anonscm.debian.org/collab-maint/sysvinit.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/sysvinit.git
 
 Package: sysvinit
 Priority: optional
@@ -47,7 +47,8 @@ Depends: initscripts (>= 2.88dsf-13.3),
  debianutils (>= 4),
 # Required for TERM=xterm switch (see #605777)
  kbdcontrol (>= 8.2+ds2-6) [kfreebsd-any]
-Replaces: sysvinit (<< 2.88dsf-44~),
+Conflicts: systemd-sysv, upstart
+Replaces: sysvinit (<< 2.88dsf-44~), systemd-sysv, upstart
 Description: System-V-like init utilities
  This package contains programs required for booting
  a Debian system and doing basic process management.
@@ -78,7 +79,7 @@ Multi-Arch: foreign
 Recommends: lsb-base (>= 3.2-14)
 Conflicts: file-rc
 Replaces: file-rc
-Suggests: sysv-rc-conf, bum
+Suggests: bum
 Depends:
  ${misc:Depends},
  sysvinit-utils (>= 2.86.ds1-62),

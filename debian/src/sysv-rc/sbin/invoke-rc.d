@@ -24,7 +24,6 @@
 RUNLEVELHELPER=/sbin/runlevel
 POLICYHELPER=/usr/sbin/policy-rc.d
 INITDPREFIX=/etc/init.d/
-UPSTARTDIR=/etc/init/
 RCDPREFIX=/etc/rc
 
 # Options
@@ -268,10 +267,12 @@ case ${ACTION} in
 	;;
 esac
 
+# Operate against system upstart, not session
+unset UPSTART_SESSION
 # If we're running on upstart and there's an upstart job of this name, do
 # the rest with upstart instead of calling the init script.
 if which initctl >/dev/null && initctl version 2>/dev/null | grep -q upstart \
-   && [ -e "$UPSTARTDIR/${INITSCRIPTID}.conf" ]
+   && initctl status ${INITSCRIPTID} 1>/dev/null 2>/dev/null
 then
     is_upstart=1
 elif test -d /run/systemd/system ; then

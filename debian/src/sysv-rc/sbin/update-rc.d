@@ -63,6 +63,12 @@ sub make_path {
     map { push @dirs, $_; mkdir join('/', @dirs), 0755; } @path;
 }
 
+sub systemd_reload {
+    if (-d "/run/systemd/system") {
+        system("systemctl", "daemon-reload");
+    }
+}
+
 # Creates the necessary links to enable/disable the service (equivalent of an
 # initscript) in systemd.
 sub make_systemd_links {
@@ -92,17 +98,9 @@ sub make_systemd_links {
                 } else {
                     unlink($service_link) if -e $service_link;
                 }
-                $changed_sth = 1;
             }
         }
         close($fh);
-
-        # If we changed anything and this machine is running systemd, tell
-        # systemd to reload so that it will immediately pick up our
-        # changes.
-        if ($changed_sth && -d "/run/systemd/system") {
-            system("systemctl", "daemon-reload");
-        }
     }
 }
 
@@ -172,22 +170,27 @@ sub insserv_updatercd {
 
     $scriptname = shift @args;
     $action = shift @args;
+    my $insserv = "/usr/lib/insserv/insserv";
+    # Fallback for older insserv package versions [2014-04-16]
+    $insserv = "/sbin/insserv" if ( -x "/sbin/insserv");
     if ("remove" eq $action) {
         if ( -f "/etc/init.d/$scriptname" ) {
-            my $rc = system("/sbin/insserv", @opts, "-r", $scriptname) >> 8;
+            my $rc = system($insserv, @opts, "-r", $scriptname) >> 8;
             if (0 == $rc && !$notreally) {
                 remove_last_action($scriptname);
             }
             error_code($rc, "insserv rejected the script header") if $rc;
+            systemd_reload;
             exit $rc;
         } else {
             # insserv removes all dangling symlinks, no need to tell it
             # what to look for.
-            my $rc = system("insserv", @opts) >> 8;
+            my $rc = system($insserv, @opts) >> 8;
             if (0 == $rc && !$notreally) {
                 remove_last_action($scriptname);
             }
             error_code($rc, "insserv rejected the script header") if $rc;
+            systemd_reload;
             exit $rc;
         }
     } elsif ("defaults" eq $action || "start" eq $action ||
@@ -200,11 +203,12 @@ sub insserv_updatercd {
         }
 
         if ( -f "/etc/init.d/$scriptname" ) {
-            my $rc = system("insserv", @opts, $scriptname) >> 8;
+            my $rc = system($insserv, @opts, $scriptname) >> 8;
             if (0 == $rc && !$notreally) {
                 save_last_action($scriptname, @orig_argv);
             }
             error_code($rc, "insserv rejected the script header") if $rc;
+            systemd_reload;
             exit $rc;
         } else {
             error("initscript does not exist: /etc/init.d/$scriptname");
@@ -216,11 +220,12 @@ sub insserv_updatercd {
 
         insserv_toggle($notreally, $action, $scriptname, @args);
         # Call insserv to resequence modified links
-        my $rc = system("insserv", @opts, $scriptname) >> 8;
+        my $rc = system($insserv, @opts, $scriptname) >> 8;
         if (0 == $rc && !$notreally) {
             save_last_action($scriptname, @orig_argv);
         }
         error_code($rc, "insserv rejected the script header") if $rc;
+        systemd_reload;
         exit $rc;
     } else {
         usage();

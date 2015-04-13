@@ -61,16 +61,16 @@ compat_link () {
 }
 
 # In 2.88dsf-23 the "mountoverflowtmp" script was dropped entirely.
-if dpkg --compare-versions "$PREV_VER" lt "2.88dsf-23" ; then
+if dpkg --compare-versions "$PREV_VER" lt-nl "2.88dsf-23" ; then
         update-rc.d -f mountoverflowtmp remove >/dev/null
 fi
 # In 2.88dsf-41+jessie1 the "mtab.sh" script was dropped entirely.
-if dpkg --compare-versions "$PREV_VER" lt "2.88dsf-41+jessie1" ; then
+if dpkg --compare-versions "$PREV_VER" lt-nl "2.88dsf-41+jessie1" ; then
         update-rc.d -f mtab.sh remove >/dev/null
 fi
 
 # Comment out obsolete options in rcS.
-if dpkg --compare-versions "$PREV_VER" lt "2.88dsf-23" ; then
+if dpkg --compare-versions "$PREV_VER" lt-nl "2.88dsf-23" ; then
     if [ -f /etc/default/rcS ]; then
 	sed -i \
 -e 's:^\(RAMRUN=.*\)$:#\1 # OBSOLETE; see /etc/default/tmpfs and tmpfs(5).:' \

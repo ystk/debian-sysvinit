@@ -197,7 +197,7 @@ Will restart in 5 seconds."
 	#
 	if [ "$rootcheck" = yes ]
 	then
-		if [ -f /forcefsck ] || grep -s -w -i "forcefsck" /proc/cmdline
+		if [ -f /forcefsck ] || grep -q -s -w -i "forcefsck" /proc/cmdline
 		then
 			force="-f"
 		else

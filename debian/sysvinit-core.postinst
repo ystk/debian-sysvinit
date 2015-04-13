@@ -86,15 +86,27 @@ rm -f /etc/ioctl.save
 if [ ! -f /etc/inittab ]
 then
 	cp -p /usr/share/sysvinit/inittab /etc/inittab
-elif [ "$(uname)" = GNU ] && fgrep -q '/libexec/getty' /etc/inittab; then
-	rm -f -- /etc/inittab.dpkg-new
-	sed -e '/^[^#]/ s|/libexec/getty|/sbin/getty|' \
-	    < /etc/inittab > /etc/inittab.dpkg-new
+elif [ "$(uname)" = GNU ]; then
+	ITAB=/etc/inittab
+	ITABNEW=${ITAB}.dpkg-new
+	cp $ITAB $ITABNEW
+	if fgrep -q '/libexec/getty' $ITABNEW; then
+		sed -e 's|/libexec/getty|/sbin/getty|' \
+		    -i $ITABNEW
+	fi
+	if ! grep -q '^c:' $ITABNEW; then
+		sed -e '/^6:/a c:23:respawn:/sbin/getty 38400 console' \
+		    -i $ITABNEW
+	fi
 
-	db_get sysvinit/hurd-fix-inittab
-	if [ "${RET}" = "true" ]; then
-		mv -- /etc/inittab /etc/inittab.dpkg-old
-		mv -- /etc/inittab.dpkg-new /etc/inittab
+	if ! diff $ITAB $ITABNEW >/dev/null; then
+	    db_get sysvinit/hurd-fix-inittab
+	    if [ "${RET}" = "true" ]; then
+		    mv -- $ITAB ${ITAB}.dpkg-old
+		    mv -- $ITABNEW $ITAB
+	    fi
+	else
+	    rm -f -- $ITABNEW
 	fi
 fi
 

@@ -59,7 +59,7 @@ do_start () {
 		# or md swap partitions.  fsck can suck RAM.
 		swaponagain 'lvm and md'
 
-		if [ -f /forcefsck ] || grep -s -w -i "forcefsck" /proc/cmdline
+		if [ -f /forcefsck ] || grep -q -s -w -i "forcefsck" /proc/cmdline
 		then
 			force="-f"
 		else
@@ -143,7 +143,7 @@ case "$1" in
 	echo "Error: argument '$1' not supported" >&2
 	exit 3
 	;;
-  stop)
+  stop|status)
 	# No-op
 	;;
   *)

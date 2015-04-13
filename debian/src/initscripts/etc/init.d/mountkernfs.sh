@@ -65,7 +65,7 @@ case "$1" in
   restart|reload|force-reload)
 	mount_filesystems remount
 	;;
-  stop)
+  stop|status)
 	# No-op
 	;;
   *)
